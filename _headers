@@ -1,12 +1,12 @@
-# Netlify : web_nothreads -> COOP/COEP non requis. Fichiers versionnés (pip42a.*) = cache long ; index.html = revalidation.
+# Netlify : web_nothreads -> COOP/COEP non requis. Fichiers versionnés (pip43b.*) = cache long ; index.html = revalidation.
 /*
   X-Content-Type-Options: nosniff
 
 /index.html
   Cache-Control: public, max-age=0, must-revalidate
 
-/pip42a.*
+/pip43b.*
   Cache-Control: public, max-age=31536000, immutable
 
-/pip42a.wasm
+/pip43b.wasm
   Content-Type: application/wasm
