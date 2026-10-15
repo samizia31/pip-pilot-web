@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="theme-color" content="#000000">
+		<meta name="format-detection" content="telephone=no">
+		<title>Pip Pilot (Godot)</title>
+		<style>
+html, body, #canvas {
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+body {
+	color: white;
+	background-color: black;
+	overflow: hidden;
+	touch-action: none;
+}
+
+#canvas {
+	display: block;
+}
+
+#canvas:focus {
+	outline: none;
+}
+
+#status, #status-splash, #status-progress {
+	position: absolute;
+	left: 0;
+	right: 0;
+}
+
+#status, #status-splash {
+	top: 0;
+	bottom: 0;
+}
+
+#status {
+	background-color: #242424;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	visibility: hidden;
+}
+
+#status-splash {
+	max-height: 100%;
+	max-width: 100%;
+	margin: auto;
+}
+
+#status-splash.show-image--false {
+	display: none;
+}
+
+#status-splash.fullsize--true {
+	height: 100%;
+	width: 100%;
+	object-fit: contain;
+}
+
+#status-splash.use-filter--false {
+	image-rendering: pixelated;
+}
+
+#status-progress, #status-notice {
+	display: none;
+}
+
+#status-progress {
+	bottom: 10%;
+	width: 50%;
+	margin: 0 auto;
+}
+
+#status-notice {
+	background-color: #5b3943;
+	border-radius: 0.5rem;
+	border: 1px solid #9b3943;
+	color: #e0e0e0;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	line-height: 1.3;
+	margin: 0 2rem;
+	overflow: hidden;
+	padding: 1rem;
+	text-align: center;
+	z-index: 1;
+}
+
+/* --- Pip : mobile / clavier (shell personnalisé) --- */
+html, body {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overscroll-behavior: none;
+	touch-action: none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+	-webkit-tap-highlight-color: transparent;
+}
+#canvas {
+	touch-action: none;
+	-webkit-touch-callout: none;
+	outline: none;
+}
+#safe-probe {
+	position: fixed;
+	left: 0; top: 0;
+	width: 0; height: 0;
+	visibility: hidden;
+	pointer-events: none;
+	padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+}
+#hint {
+	position: fixed;
+	left: 50%;
+	top: 12%;
+	transform: translateX(-50%);
+	max-width: 86%;
+	padding: 0.7rem 1.1rem;
+	border-radius: 0.8rem;
+	background: rgba(42, 26, 51, 0.82);
+	border: 2px solid rgba(255, 255, 255, 0.35);
+	color: #fff;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	font-size: 1.05rem;
+	line-height: 1.35;
+	text-align: center;
+	pointer-events: none;
+	z-index: 5;
+	display: none;
+	transition: opacity 0.35s;
+}
+#hint.show { display: block; }
+#hint.fade { opacity: 0; }
+#rotate {
+	position: fixed;
+	inset: 0;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.88);
+	color: #fff;
+	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
+	font-size: 1.2rem;
+	text-align: center;
+	z-index: 9;
+	pointer-events: none;
+}
+@media (orientation: portrait) {
+	body.is-touch #rotate { display: flex; }
+}
+		</style>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="pip1015b.icon.png" />
+<link rel="apple-touch-icon" href="pip1015b.apple-touch-icon.png"/>
+
+	</head>
+	<body>
+		<div id="safe-probe"></div>
+		<div id="hint"></div>
+		<div id="rotate">&#8635; Tourne ton t&eacute;l&eacute;phone en mode paysage</div>
+		<canvas id="canvas" tabindex="0">
+			Your browser does not support the canvas tag.
+		</canvas>
+
+		<noscript>
+			Your browser does not support JavaScript.
+		</noscript>
+
+		<div id="status">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="pip1015b.png" alt="">
+			<progress id="status-progress"></progress>
+			<div id="status-notice"></div>
+		</div>
+
+		<script>
+// --- Pip : détection tactile, focus clavier, anti-zoom / menu contextuel, plein écran au 1er toucher, safe areas ---
+(function () {
+	const params = new URLSearchParams(location.search);
+	const canvas = document.getElementById('canvas');
+	const hint = document.getElementById('hint');
+	const isTouch = (navigator.maxTouchPoints > 0) || ('ontouchstart' in window) || params.get('touch') === '1';
+	window.pipIsTouch = isTouch && params.get('touch') !== '0';
+	window.pipDebugHud = params.get('hud') === '1';
+	if (window.pipIsTouch) document.body.classList.add('is-touch');
+	window.pipSafeArea = function () {
+		const cs = getComputedStyle(document.getElementById('safe-probe'));
+		return [cs.paddingTop, cs.paddingRight, cs.paddingBottom, cs.paddingLeft].map((v) => parseFloat(v) || 0);
+	};
+	function focusCanvas() {
+		try { window.focus(); canvas.focus({ preventScroll: true }); } catch (e) {}
+	}
+	let ready = false, interacted = false;
+	function hintText() {
+		return window.pipIsTouch
+			? 'Touche l\u2019\u00e9cran pour jouer : \u25c0 \u25b6 \u00e0 gauche, SAUT \u00e0 droite (maintiens = saut plus haut)'
+			: 'Clique sur le jeu puis utilise \u2190/\u2192 ou Q/D (A/D), Espace pour sauter';
+	}
+	function showHint() {
+		hint.textContent = hintText();
+		hint.classList.remove('fade');
+		hint.classList.add('show');
+	}
+	function hideHint() {
+		if (!hint.classList.contains('show')) return;
+		hint.classList.add('fade');
+		setTimeout(() => hint.classList.remove('show'), 400);
+	}
+	function tryFullscreen() {
+		const el = document.documentElement;
+		const req = el.requestFullscreen || el.webkitRequestFullscreen;
+		if (req && !document.fullscreenElement && !document.webkitFullscreenElement) {
+			try { const p = req.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (e) {}
+		}
+	}
+	function onFirstInteraction(ev) {
+		focusCanvas();
+		if (!ready) return;
+		if (ev.type === 'touchend' || ev.type === 'pointerup') {
+			if (!interacted && window.pipIsTouch) tryFullscreen();   // iPhone Safari : ignoré silencieusement
+		}
+		interacted = true;
+		hideHint();
+	}
+	['pointerdown', 'pointerup', 'touchstart', 'touchend', 'mousedown', 'keydown'].forEach((n) =>
+		window.addEventListener(n, onFirstInteraction, { passive: true, capture: true }));
+	window.addEventListener('focus', focusCanvas);
+	window.addEventListener('blur', () => { if (ready && !window.pipIsTouch) { interacted = false; showHint(); } });
+	document.addEventListener('contextmenu', (e) => e.preventDefault());
+	document.addEventListener('selectstart', (e) => e.preventDefault());
+	document.addEventListener('dragstart', (e) => e.preventDefault());
+	['gesturestart', 'gesturechange', 'gestureend'].forEach((n) => document.addEventListener(n, (e) => e.preventDefault()));
+	document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+	document.addEventListener('dblclick', (e) => e.preventDefault());
+	// Les touches de jeu ne doivent pas faire défiler la page ni déclencher le navigateur
+	window.addEventListener('keydown', (e) => {
+		if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', ' '].includes(e.code) || e.key === ' ') e.preventDefault();
+	}, { capture: true });
+	// appelé par le shell quand le jeu est lancé
+	window.pipOnGameStarted = function () {
+		ready = true;
+		focusCanvas();
+		if (!interacted) showHint();
+		setTimeout(focusCanvas, 300);
+	};
+	window.addEventListener('load', focusCanvas);
+})();
+		</script>
+		<script src="pip1015b.js"></script>
+		<script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"pip1015b","experimentalVK":false,"fileSizes":{"pip1015b.pck":410056,"pip1015b.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_THREADS_ENABLED = false;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+	const statusOverlay = document.getElementById('status');
+	const statusProgress = document.getElementById('status-progress');
+	const statusNotice = document.getElementById('status-notice');
+
+	let initializing = true;
+	let statusMode = '';
+
+	function setStatusMode(mode) {
+		if (statusMode === mode || !initializing) {
+			return;
+		}
+		if (mode === 'hidden') {
+			statusOverlay.remove();
+			initializing = false;
+			return;
+		}
+		statusOverlay.style.visibility = 'visible';
+		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+		statusMode = mode;
+	}
+
+	function setStatusNotice(text) {
+		while (statusNotice.lastChild) {
+			statusNotice.removeChild(statusNotice.lastChild);
+		}
+		const lines = text.split('\n');
+		lines.forEach((line) => {
+			statusNotice.appendChild(document.createTextNode(line));
+			statusNotice.appendChild(document.createElement('br'));
+		});
+	}
+
+	function displayFailureNotice(err) {
+		console.error(err);
+		if (err instanceof Error) {
+			setStatusNotice(err.message);
+		} else if (typeof err === 'string') {
+			setStatusNotice(err);
+		} else {
+			setStatusNotice('An unknown error occurred.');
+		}
+		setStatusMode('notice');
+		initializing = false;
+	}
+
+	const missing = Engine.getMissingFeatures({
+		threads: GODOT_THREADS_ENABLED,
+	});
+
+	if (missing.length !== 0) {
+		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+			let serviceWorkerRegistrationPromise;
+			try {
+				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+			} catch (err) {
+				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+			}
+			// There's a chance that installing the service worker would fix the issue
+			Promise.race([
+				serviceWorkerRegistrationPromise.then((registration) => {
+					if (registration != null) {
+						return Promise.reject(new Error('Service worker already exists.'));
+					}
+					return registration;
+				}).then(() => engine.installServiceWorker()),
+				// For some reason, `getRegistration()` can stall
+				new Promise((resolve) => {
+					setTimeout(() => resolve(), 2000);
+				}),
+			]).then(() => {
+				// Reload if there was no error.
+				window.location.reload();
+			}).catch((err) => {
+				console.error('Error while registering service worker:', err);
+			});
+		} else {
+			// Display the message as usual
+			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+			displayFailureNotice(missingMsg + missing.join('\n'));
+		}
+	} else {
+		setStatusMode('progress');
+		engine.startGame({
+			'onProgress': function (current, total) {
+				if (current > 0 && total > 0) {
+					statusProgress.value = current;
+					statusProgress.max = total;
+				} else {
+					statusProgress.removeAttribute('value');
+					statusProgress.removeAttribute('max');
+				}
+			},
+		}).then(() => {
+			setStatusMode('hidden');
+			if (window.pipOnGameStarted) window.pipOnGameStarted();
+		}, displayFailureNotice);
+	}
+}());
+		</script>
+	</body>
+</html>
+

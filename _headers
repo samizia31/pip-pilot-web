@@ -1,22 +1,12 @@
-# Netlify : en-têtes pour la build Godot Web (web_nothreads -> COOP/COEP NON requis ; inutile aussi sur itch.io)
+# Netlify : web_nothreads -> COOP/COEP non requis. Fichiers versionnés (pip1015b.*) = cache long ; index.html = revalidation.
 /*
   X-Content-Type-Options: nosniff
+
+/index.html
   Cache-Control: public, max-age=0, must-revalidate
 
-/index.wasm
-  Content-Type: application/wasm
+/pip1015b.*
   Cache-Control: public, max-age=31536000, immutable
 
-/index.pck
-  Content-Type: application/octet-stream
-  Cache-Control: public, max-age=0, must-revalidate
-
-/index.js
-  Content-Type: text/javascript; charset=utf-8
-  Cache-Control: public, max-age=0, must-revalidate
-
-/index.audio.worklet.js
-  Content-Type: text/javascript; charset=utf-8
-
-/index.audio.position.worklet.js
-  Content-Type: text/javascript; charset=utf-8
+/pip1015b.wasm
+  Content-Type: application/wasm
