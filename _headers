@@ -1,0 +1,22 @@
+# Netlify : en-têtes pour la build Godot Web (web_nothreads -> COOP/COEP NON requis ; inutile aussi sur itch.io)
+/*
+  X-Content-Type-Options: nosniff
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.wasm
+  Content-Type: application/wasm
+  Cache-Control: public, max-age=31536000, immutable
+
+/index.pck
+  Content-Type: application/octet-stream
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.js
+  Content-Type: text/javascript; charset=utf-8
+  Cache-Control: public, max-age=0, must-revalidate
+
+/index.audio.worklet.js
+  Content-Type: text/javascript; charset=utf-8
+
+/index.audio.position.worklet.js
+  Content-Type: text/javascript; charset=utf-8
