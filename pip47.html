@@ -161,8 +161,8 @@ html, body {
 	body.is-touch #rotate { display: flex; }
 }
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="pip43b.icon.png" />
-<link rel="apple-touch-icon" href="pip43b.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="pip47.icon.png" />
+<link rel="apple-touch-icon" href="pip47.apple-touch-icon.png"/>
 
 	</head>
 	<body>
@@ -178,7 +178,7 @@ html, body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="pip43b.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="pip47.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
@@ -193,6 +193,8 @@ html, body {
 	window.pipIsTouch = isTouch && params.get('touch') !== '0';
 	window.pipDebugHud = params.get('hud') === '1';
 	window.pipPerf = params.get('perf') === '1';      // ?perf=1 : mesure frame time (moy/p99) 30 s puis résumé affiché
+	window.pipScale = parseFloat(params.get('scale') || '0') || 0;  // ?scale=0.75 : résolution de rendu 3D (0.5–1, défaut 1)
+	window.pipZoom = params.get('zoom') || '';          // ?zoom=hub|cine|close (préréglages de zoom caméra ; gameplay par défaut ; touche Z = suivant)
 	window.pipAuto = params.get('auto') === '1';      // ?auto=1 : Pip joue tout seul (partie scriptée, pour les mesures)
 	if (window.pipIsTouch) document.body.classList.add('is-touch');
 	window.pipSafeArea = function () {
@@ -258,9 +260,9 @@ html, body {
 	window.addEventListener('load', focusCanvas);
 })();
 		</script>
-		<script src="pip43b.js"></script>
+		<script src="pip47.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"pip43b","experimentalVK":false,"fileSizes":{"pip43b.pck":2172496,"pip43b.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"pip47","experimentalVK":false,"fileSizes":{"pip47.pck":2486588,"pip47.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
