@@ -1,3 +1,4 @@
+<!-- build: pip48b -->
 <!DOCTYPE html>
 <html lang="fr">
 	<head>
@@ -161,8 +162,8 @@ html, body {
 	body.is-touch #rotate { display: flex; }
 }
 		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="pip47.icon.png" />
-<link rel="apple-touch-icon" href="pip47.apple-touch-icon.png"/>
+		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 
 	</head>
 	<body>
@@ -178,7 +179,7 @@ html, body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="pip47.png" alt="">
+			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
 			<div id="status-notice"></div>
 		</div>
@@ -195,6 +196,9 @@ html, body {
 	window.pipPerf = params.get('perf') === '1';      // ?perf=1 : mesure frame time (moy/p99) 30 s puis résumé affiché
 	window.pipScale = parseFloat(params.get('scale') || '0') || 0;  // ?scale=0.75 : résolution de rendu 3D (0.5–1, défaut 1)
 	window.pipZoom = params.get('zoom') || '';          // ?zoom=hub|cine|close (préréglages de zoom caméra ; gameplay par défaut ; touche Z = suivant)
+	window.pipCam = params.get('cam') || '';          // ?cam=near22 / near25 : caméra tactile plus proche (comparaison seulement ; défaut 10,5 u)
+	window.pipOutlineShader = params.get('outline_shader') || '';  // ?outline_shader=sofia : shader de contour v4.7 de Sofia (comparaison)
+	window.pipOutline = params.get('outline') || '';  // ?outline=2 : épaisseur du contour en px écran (défaut : 2 en tactile, historique au bureau ; 0 = historique)
 	window.pipAuto = params.get('auto') === '1';      // ?auto=1 : Pip joue tout seul (partie scriptée, pour les mesures)
 	if (window.pipIsTouch) document.body.classList.add('is-touch');
 	window.pipSafeArea = function () {
@@ -211,6 +215,7 @@ html, body {
 			: 'Clique sur le jeu puis utilise \u2190/\u2192 ou Q/D (A/D), Espace pour sauter, Maj pour courir';
 	}
 	function showHint() {
+		if (new URLSearchParams(location.search).get('auto') === '1') return;   // pip48 : en mesure M11 (?perf=1&auto=1) le bandeau d'aide ne doit pas masquer le panneau PERF
 		hint.textContent = hintText();
 		hint.classList.remove('fade');
 		hint.classList.add('show');
@@ -260,9 +265,9 @@ html, body {
 	window.addEventListener('load', focusCanvas);
 })();
 		</script>
-		<script src="pip47.js"></script>
+		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"pip47","experimentalVK":false,"fileSizes":{"pip47.pck":2486588,"pip47.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":2539828,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
